@@ -1,8 +1,12 @@
 package com.example.desafiosoftplan.controller;
 
 import com.example.desafiosoftplan.exception.ProdutoNaoEncontradoException;
+import com.example.desafiosoftplan.exception.UsuarioNaoAdmException;
+import com.example.desafiosoftplan.exception.UsuarioNaoEncontradoException;
 import com.example.desafiosoftplan.model.Produto;
+import com.example.desafiosoftplan.model.Usuario;
 import com.example.desafiosoftplan.service.ProdutoService;
+import com.example.desafiosoftplan.service.UsuarioService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,15 +17,19 @@ import java.util.List;
 @RestController
 public class ProdutoController {
     private final ProdutoService produtoService;
+    private final UsuarioService usuarioService;
+    private final static String CREDENCIAIS_CRIPTOGRAFADAS_HEADER = "Authorization";
     private final static String MENSAGEM_ERRO_HEADER = "MensagemErro";
 
-    public ProdutoController(ProdutoService produtoService) {
+    public ProdutoController(ProdutoService produtoService, UsuarioService usuarioService) {
         this.produtoService = produtoService;
+        this.usuarioService = usuarioService;
     }
 
     @GetMapping("/getAllProdutos")
-    public ResponseEntity<List<Produto>> getAllProdutos() {
+    public ResponseEntity<List<Produto>> getAllProdutos(@RequestHeader(CREDENCIAIS_CRIPTOGRAFADAS_HEADER) String credenciaisCriptografadas) {
         try {
+            usuarioService.getByUsernameESenha(credenciaisCriptografadas);
             List<Produto> produtos = produtoService.getAllProdutos();
             return new ResponseEntity<>(produtos, HttpStatus.OK);
         }
@@ -33,8 +41,9 @@ public class ProdutoController {
     }
 
     @GetMapping("/getProdutoById/{id}")
-    public ResponseEntity<Produto> getProdutoById(@PathVariable Long id) {
+    public ResponseEntity<Produto> getProdutoById(@PathVariable Long id, @RequestHeader(CREDENCIAIS_CRIPTOGRAFADAS_HEADER) String credenciaisCriptografadas) {
         try {
+            usuarioService.getByUsernameESenha(credenciaisCriptografadas);
             Produto produto = produtoService.getProdutoById(id);
             return new ResponseEntity<>(produto, HttpStatus.OK);
         }
@@ -46,8 +55,10 @@ public class ProdutoController {
     }
 
     @PostMapping("/addProduto")
-    public ResponseEntity<Produto> addProduto(@RequestBody Produto produto) {
+    public ResponseEntity<Produto> addProduto(@RequestBody Produto produto, @RequestHeader(CREDENCIAIS_CRIPTOGRAFADAS_HEADER) String credenciaisCriptografadas) {
         try {
+            Usuario usuario = usuarioService.getByUsernameESenha(credenciaisCriptografadas);
+            usuarioService.isAdm(usuario);
             Produto produtoSalvo = produtoService.addProduto(produto);
             return new ResponseEntity<>(produtoSalvo, HttpStatus.OK);
         }
@@ -59,8 +70,10 @@ public class ProdutoController {
     }
 
     @PostMapping("/updateProduto")
-    public ResponseEntity<Produto> updateProduto(@RequestBody Produto produto) {
+    public ResponseEntity<Produto> updateProduto(@RequestBody Produto produto, @RequestHeader(CREDENCIAIS_CRIPTOGRAFADAS_HEADER) String credenciaisCriptografadas) {
         try {
+            Usuario usuario = usuarioService.getByUsernameESenha(credenciaisCriptografadas);
+            usuarioService.isAdm(usuario);
             Produto produtoAtualizado = produtoService.updateProduto(produto);
             return new ResponseEntity<>(produtoAtualizado, HttpStatus.OK);
         }
@@ -72,8 +85,10 @@ public class ProdutoController {
     }
 
     @DeleteMapping("/deleteProdutoById/{id}")
-    public ResponseEntity<HttpStatus> deleteProdutoById(@PathVariable Long id) {
+    public ResponseEntity<HttpStatus> deleteProdutoById(@PathVariable Long id, @RequestHeader(CREDENCIAIS_CRIPTOGRAFADAS_HEADER) String credenciaisCriptografadas) {
         try {
+            Usuario usuario = usuarioService.getByUsernameESenha(credenciaisCriptografadas);
+            usuarioService.isAdm(usuario);
             produtoService.deleteProdutoById(id);
             return new ResponseEntity<>(HttpStatus.OK);
         }
@@ -85,7 +100,13 @@ public class ProdutoController {
     }
 
     private HttpStatus identificarCodigoResposta(Exception e) {
-        if (e instanceof ProdutoNaoEncontradoException) {
+        if (e instanceof UsuarioNaoEncontradoException) {
+            return HttpStatus.FORBIDDEN;
+        }
+        else if (e instanceof UsuarioNaoAdmException) {
+            return HttpStatus.UNAUTHORIZED;
+        }
+        else if (e instanceof ProdutoNaoEncontradoException) {
             return HttpStatus.NOT_FOUND;
         }
         else {
