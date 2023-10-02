@@ -48,10 +48,12 @@ public class ProdutoTests {
     public void addProduto() {
         String nome = "Mesa";
         Long qtdadeEstoque = 7L;
+        Double preco = 200.00;
 
         Produto produto = new Produto();
         produto.setNome(nome);
         produto.setQtdadeEstoque(qtdadeEstoque);
+        produto.setPreco(preco);
 
         Produto produtoSalvo = produtoService.addProduto(produto);
         Assertions.assertThat(produtoSalvo.getId()).isNotNull();

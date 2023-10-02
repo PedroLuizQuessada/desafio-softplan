@@ -13,6 +13,9 @@ public class Produto {
     @Column(nullable = false, name = "quantidade_estoque")
     private Long qtdadeEstoque;
 
+    @Column(nullable = false)
+    private Double preco;
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -35,5 +38,13 @@ public class Produto {
 
     public void setQtdadeEstoque(Long qtdadeEstoque) {
         this.qtdadeEstoque = qtdadeEstoque;
+    }
+
+    public Double getPreco() {
+        return preco;
+    }
+
+    public void setPreco(Double preco) {
+        this.preco = preco;
     }
 }
