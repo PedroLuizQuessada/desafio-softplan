@@ -30,6 +30,10 @@ public class ProdutoService {
         }
     }
 
+    public List<Produto> getProdutosByNome(String nome) {
+        return produtoRepository.getByNome(nome);
+    }
+
     public Produto addProduto(Produto produto) {
         return produtoRepository.save(produto);
     }

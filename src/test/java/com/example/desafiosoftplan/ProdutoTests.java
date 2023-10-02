@@ -37,6 +37,14 @@ public class ProdutoTests {
     }
 
     @Test
+    public void getProdutosByNome() {
+        String nome = "panela";
+
+        List<Produto> produtos = produtoService.getProdutosByNome(nome);
+        Assertions.assertThat(produtos).isNotNull();
+    }
+
+    @Test
     public void addProduto() {
         String nome = "Mesa";
         Long qtdadeEstoque = 7L;

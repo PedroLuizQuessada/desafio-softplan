@@ -54,6 +54,20 @@ public class ProdutoController {
         }
     }
 
+    @GetMapping("/getProdutoByNome/{nome}")
+    public ResponseEntity<List<Produto>> getProdutoByNome(@PathVariable String nome, @RequestHeader(CREDENCIAIS_CRIPTOGRAFADAS_HEADER) String credenciaisCriptografadas) {
+        try {
+            usuarioService.getByUsernameESenha(credenciaisCriptografadas);
+            List<Produto> produtos = produtoService.getProdutosByNome(nome);
+            return new ResponseEntity<>(produtos, HttpStatus.OK);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(identificarCodigoResposta(e))
+                    .headers(gerarCabecalhoResposta(e))
+                    .body(null);
+        }
+    }
+
     @PostMapping("/addProduto")
     public ResponseEntity<Produto> addProduto(@RequestBody Produto produto, @RequestHeader(CREDENCIAIS_CRIPTOGRAFADAS_HEADER) String credenciaisCriptografadas) {
         try {
